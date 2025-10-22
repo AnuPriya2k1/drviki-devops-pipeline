@@ -1,36 +1,27 @@
-name: CI/CD - DrViKi App
+name: CI/CD Pipeline - DrViKi App
 
 on:
   push:
-    branches: [ "main" ]
+    branches:
+      - main  # change if your main branch name is different
 
 jobs:
-  build-test-deploy:
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    # 1️⃣ Checkout the code
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
+    # 2️⃣ Install Railway CLI
+    - name: Install Railway CLI
+      run: curl -fsSL https://railway.app/install.sh | sh
 
-      - name: Install dependencies
-        run: |
-          pip install -r requirements.txt
+    # 3️⃣ Login to Railway
+    - name: Login to Railway
+      run: railway login --apiKey ${{ secrets.RAILWAY_API_KEY }}
 
-      - name: Run basic test
-        run: |
-          python app.py &
-          sleep 5
-          curl http://localhost:8080
-
-      - name: Build Docker image
-        run: docker build -t drviki-app .
-
-      - name: Deploy to Railway
-        uses: railwayapp/railway-action@v0.2.3
-        with:
-          railwayToken: ${{ secrets.RAILWAY_TOKEN }}
+    # 4️⃣ Deploy to Railway
+    - name: Deploy App
+      run: railway up --yes
